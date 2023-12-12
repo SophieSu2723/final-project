@@ -3,16 +3,6 @@ import os
 import json
 import sqlite3
 
-def load_json(filename):
-    try:
-        with open(filename,'r') as f:
-            # contents = f.read()
-            data = json.load(f)
-        f.close()
-        return data
-    except:
-        return {}
-
 #write the json file
 def write_json(filename, dict):
     with open(filename, 'a') as f:
@@ -79,35 +69,38 @@ def set_up_price_table(data, cur, conn):
     conn.commit()
     return None
 
+def main():
 # # get data from the API and write it into the json file
-dir_path = os.path.dirname(os.path.realpath(__file__))
-filename = dir_path + '/' + "price.json"
-# for i in range(1,151):
-#     recipe_id = i
-#     api_key = '8215a29f2904438f86f520ec142abf8e'
-#     api_url = f'https://api.spoonacular.com/recipes/{recipe_id}/priceBreakdownWidget.json'
-#     params = {'apiKey': api_key}
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    filename = dir_path + '/' + "price.json"
+    # for i in range(1,151):
+    #     recipe_id = i
+    #     api_key = '8215a29f2904438f86f520ec142abf8e'
+    #     api_url = f'https://api.spoonacular.com/recipes/{recipe_id}/priceBreakdownWidget.json'
+    #     params = {'apiKey': api_key}
 
-#     # make the API request and add the recipe id to each recipe
-#     response = requests.get(api_url, params=params)
-#     info = response.json()
-#     info['recipe_id'] = i
-#     if 'ingredients' in info:
-#         # print(type(info))
-#         write_json(filename,info)
+    #     # make the API request and add the recipe id to each recipe
+    #     response = requests.get(api_url, params=params)
+    #     info = response.json()
+    #     info['recipe_id'] = i
+    #     if 'ingredients' in info:
+    #         # print(type(info))
+    #         write_json(filename,info)
 
-# write data into database
-json_data = read_json(filename)
-cur, conn = set_up_database("final.db")
-# print(json_data)
-batch_size = 25
-table_name = 'Price'
-cur.execute(
-    'CREATE TABLE IF NOT EXISTS Price (recipe_id TEXT PRIMARY KEY, total_price INTEGER, price_per_serving INTEGER)'
-)
-cur.execute(f'SELECT COUNT(*) FROM {table_name}')
-row_count = cur.fetchone()[0]
-if row_count < 100:
-    batch = json_data[row_count:row_count+batch_size]
-    set_up_price_table(batch, cur, conn)
-conn.close()
+    # write data into database
+    json_data = read_json(filename)
+    cur, conn = set_up_database("final.db")
+    # print(json_data)
+    batch_size = 25
+    table_name = 'Price'
+    cur.execute(
+        'CREATE TABLE IF NOT EXISTS Price (recipe_id TEXT PRIMARY KEY, total_price INTEGER, price_per_serving INTEGER)'
+    )
+    cur.execute(f'SELECT COUNT(*) FROM {table_name}')
+    row_count = cur.fetchone()[0]
+    if row_count < 100:
+        batch = json_data[row_count:row_count+batch_size]
+        set_up_price_table(batch, cur, conn)
+    conn.close()
+
+main()
